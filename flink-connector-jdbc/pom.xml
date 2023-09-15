@@ -29,7 +29,7 @@ under the License.
 		<version>3.2-xc-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>flink-connector-jdbc</artifactId>
+	<artifactId>flink-connector-jdbc-xc</artifactId>
 	<name>Flink : Connectors : JDBC</name>
 
 	<packaging>jar</packaging>
