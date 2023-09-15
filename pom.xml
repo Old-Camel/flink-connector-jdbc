@@ -29,7 +29,7 @@ under the License.
 
     <groupId>org.apache.flink</groupId>
     <artifactId>flink-connector-jdbc-parent</artifactId>
-    <version>3.2-SNAPSHOT</version>
+    <version>3.2</version>
     <name>Flink : Connectors : JDBC : Parent</name>
     <packaging>pom</packaging>
     <inceptionYear>2022</inceptionYear>
@@ -47,7 +47,7 @@ under the License.
     </modules>
 
     <properties>
-        <flink.version>1.17.0</flink.version>
+        <flink.version>1.15.0</flink.version>
 
         <jackson-bom.version>2.13.4.20221013</jackson-bom.version>
         <junit4.version>4.13.2</junit4.version>
@@ -326,6 +326,15 @@ under the License.
         </dependencies>
     </dependencyManagement>
 
+    <distributionManagement>
+        <repository>
+            <id>yunzai-nexus3</id>
+            <!-- 注意如果发布的是 snapshot 版本的代码，必须使用该地址，而且版本号，必须是 -SNAPSHOT 结尾 -->
+<!--            <url>http://222.30.194.85:8081/repository/maven-yunzai-snapshot/</url>-->
+            <!-- 注意如果发布的是 release 版本的代码，必须使用该地址，而且版本号，必须不能带 snapshot -->
+                        <url>http://222.30.194.85:8081/repository/maven-yunzai-release/</url>
+        </repository>
+    </distributionManagement>
     <build>
         <plugins>
 
