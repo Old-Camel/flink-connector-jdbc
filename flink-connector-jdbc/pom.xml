@@ -26,10 +26,10 @@ under the License.
 	<parent>
 		<groupId>org.apache.flink</groupId>
 		<artifactId>flink-connector-jdbc-parent</artifactId>
-		<version>3.2</version>
+		<version>3.2-xc-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>flink-connector-jdbc-xc</artifactId>
+	<artifactId>flink-connector-jdbc</artifactId>
 	<name>Flink : Connectors : JDBC</name>
 
 	<packaging>jar</packaging>

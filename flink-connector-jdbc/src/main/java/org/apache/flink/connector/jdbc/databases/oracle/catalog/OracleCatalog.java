@@ -1,7 +1,6 @@
 package org.apache.flink.connector.jdbc.databases.oracle.catalog;
 
 import org.apache.flink.connector.jdbc.catalog.AbstractJdbcCatalog;
-import org.apache.flink.connector.jdbc.databases.postgres.catalog.PostgresTablePath;
 import org.apache.flink.table.api.Schema;
 import org.apache.flink.table.catalog.CatalogBaseTable;
 import org.apache.flink.table.catalog.CatalogDatabase;
@@ -39,7 +38,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /** oracle catalog. */
 public class OracleCatalog extends AbstractJdbcCatalog {
@@ -136,14 +134,12 @@ public class OracleCatalog extends AbstractJdbcCatalog {
             throw new DatabaseNotExistException(getName(), databaseName);
         }
 
-        List<String> listDatabases =
-                listDatabases().stream()
-                        .map(username -> "'" + username + "'")
-                        .collect(Collectors.toList());
         return extractColumnValuesBySQL(
                 this.defaultUrl,
-                "SELECT OWNER||'.'||TABLE_NAME AS schemaTableName FROM sys.all_tables WHERE OWNER IN ("
-                        + String.join(",", listDatabases)
+                "SELECT TABLE_NAME AS schemaTableName FROM sys.all_tables WHERE OWNER IN ("
+                        + "'"
+                        + databaseName
+                        + "'"
                         + ")"
                         + "ORDER BY OWNER,TABLE_NAME",
                 1,
@@ -159,13 +155,14 @@ public class OracleCatalog extends AbstractJdbcCatalog {
         }
 
         String databaseName = tablePath.getDatabaseName();
-        String dbUrl = baseUrl + databaseName;
+
+        String dbUrl = this.defaultUrl;
         try (Connection conn = DriverManager.getConnection(dbUrl, username, pwd)) {
             DatabaseMetaData metaData = conn.getMetaData();
             Optional<UniqueConstraint> primaryKey =
                     getPrimaryKey(
                             metaData,
-                            databaseName,
+                            this.getDefaultDatabase(),
                             getSchemaName(tablePath),
                             getTableName(tablePath));
             String statement = String.format("SELECT * FROM %s ", getSchemaTableName(tablePath));
@@ -203,14 +200,13 @@ public class OracleCatalog extends AbstractJdbcCatalog {
 
     @Override
     public boolean tableExists(ObjectPath tablePath) throws CatalogException {
-        String[] schemaTableNames = getSchemaTableName(tablePath).split("\\.");
         return !extractColumnValuesBySQL(
                         defaultUrl,
                         "SELECT table_name FROM sys.all_tables where OWNER = ? and table_name = ?",
                         1,
                         null,
-                        schemaTableNames[0],
-                        schemaTableNames[1])
+                        tablePath.getDatabaseName(),
+                        tablePath.getObjectName())
                 .isEmpty();
     }
 
@@ -235,27 +231,29 @@ public class OracleCatalog extends AbstractJdbcCatalog {
                 if (Objects.isNull(filterFunc) || filterFunc.test(columnValue)) {
                     columnValues.add(columnValue);
                 }
-                return columnValues;
             }
+            return columnValues;
         } catch (Exception ex) {
             throw new CatalogException(
                     String.format(
                             "The following SQL query could not be executed (%s): %s", connUrl, sql),
                     ex);
         }
-        return columnValues;
     }
 
-    protected String getSchemaTableName(ObjectPath tablePath) {
-        return PostgresTablePath.fromFlinkTableName(tablePath.getObjectName()).getFullPath();
-    }
-
-    protected String getSchemaName(ObjectPath tablePath) {
-        return PostgresTablePath.fromFlinkTableName(tablePath.getObjectName()).getPgSchemaName();
-    }
-
+    @Override
     protected String getTableName(ObjectPath tablePath) {
-        return PostgresTablePath.fromFlinkTableName(tablePath.getObjectName()).getPgTableName();
+        return tablePath.getObjectName();
+    }
+
+    @Override
+    protected String getSchemaName(ObjectPath tablePath) {
+        return tablePath.getDatabaseName();
+    }
+
+    @Override
+    protected String getSchemaTableName(ObjectPath tablePath) {
+        return tablePath.getObjectName();
     }
 
     protected DataType fromJDBCType(ObjectPath tablePath, ResultSetMetaData metadata, int colIndex)
