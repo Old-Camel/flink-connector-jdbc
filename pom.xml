@@ -351,6 +351,10 @@ under the License.
     </dependencyManagement>
 
     <distributionManagement>
+        <snapshotRepository>
+            <id>yunzai-nexus3</id>
+            <url>http://222.30.194.85:8081/repository/maven-yunzai-snapshot/</url>
+        </snapshotRepository>
         <repository>
             <id>yunzai-nexus3</id>
             <!-- 注意如果发布的是 snapshot 版本的代码，必须使用该地址，而且版本号，必须是 -SNAPSHOT 结尾 -->
