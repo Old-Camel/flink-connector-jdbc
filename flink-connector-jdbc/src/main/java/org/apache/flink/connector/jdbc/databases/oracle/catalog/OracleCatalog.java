@@ -11,7 +11,6 @@ import org.apache.flink.table.catalog.UniqueConstraint;
 import org.apache.flink.table.catalog.exceptions.CatalogException;
 import org.apache.flink.table.catalog.exceptions.DatabaseNotExistException;
 import org.apache.flink.table.catalog.exceptions.TableNotExistException;
-import org.apache.flink.table.factories.FactoryUtil;
 import org.apache.flink.table.types.DataType;
 import org.apache.flink.util.Preconditions;
 
@@ -38,6 +37,12 @@ import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.apache.flink.connector.jdbc.table.JdbcConnectorOptions.PASSWORD;
+import static org.apache.flink.connector.jdbc.table.JdbcConnectorOptions.TABLE_NAME;
+import static org.apache.flink.connector.jdbc.table.JdbcConnectorOptions.URL;
+import static org.apache.flink.connector.jdbc.table.JdbcConnectorOptions.USERNAME;
+import static org.apache.flink.table.factories.FactoryUtil.CONNECTOR;
 
 /** oracle catalog. */
 public class OracleCatalog extends AbstractJdbcCatalog {
@@ -154,8 +159,6 @@ public class OracleCatalog extends AbstractJdbcCatalog {
             throw new TableNotExistException(getName(), tablePath);
         }
 
-        String databaseName = tablePath.getDatabaseName();
-
         String dbUrl = this.defaultUrl;
         try (Connection conn = DriverManager.getConnection(dbUrl, username, pwd)) {
             DatabaseMetaData metaData = conn.getMetaData();
@@ -185,11 +188,12 @@ public class OracleCatalog extends AbstractJdbcCatalog {
                     pk -> schemaBuilder.primaryKeyNamed(pk.getName(), pk.getColumns()));
             Schema tableSchema = schemaBuilder.build();
             Map<String, String> props = new HashMap<>();
-            props.put(FactoryUtil.CONNECTOR.key(), IDENTIFIER);
-            props.put("username", username);
-            props.put("password", pwd);
-            props.put("table_name", getSchemaTableName(tablePath));
-            props.put("driverName", ORACLE_DRIVER);
+
+            props.put(CONNECTOR.key(), IDENTIFIER);
+            props.put(URL.key(), dbUrl);
+            props.put(USERNAME.key(), username);
+            props.put(PASSWORD.key(), pwd);
+            props.put(TABLE_NAME.key(), getSchemaTableName(tablePath));
             return CatalogTable.of(tableSchema, null, Lists.newArrayList(), props);
 
         } catch (Exception ex) {
