@@ -111,8 +111,8 @@ public class OracleCatalog extends AbstractJdbcCatalog {
     public List<String> listDatabases() throws CatalogException {
         return extractColumnValuesBySQL(
                 this.defaultUrl,
-                "select username from sys.dba_users "
-                        + "where DEFAULT_TABLESPACE <> 'SYSTEM' and DEFAULT_TABLESPACE <> 'SYSAUX' "
+                "select username from sys.all_users "
+                        + "where ORACLE_MAINTAINED ='N' "
                         + " order by username",
                 1,
                 dbName -> !builtinDatabases.contains(dbName));
@@ -141,12 +141,16 @@ public class OracleCatalog extends AbstractJdbcCatalog {
 
         return extractColumnValuesBySQL(
                 this.defaultUrl,
-                "SELECT TABLE_NAME AS schemaTableName FROM sys.all_tables WHERE OWNER IN ("
+                "SELECT schemaTableName FROM (SELECT TABLE_NAME AS schemaTableName FROM sys.all_tables WHERE OWNER IN ("
                         + "'"
                         + databaseName
                         + "'"
                         + ")"
-                        + "ORDER BY OWNER,TABLE_NAME",
+                        + "UNION  SELECT VIEW_NAME AS schemaTableName FROM sys.all_views WHERE OWNER IN ("
+                        + "'"
+                        + databaseName
+                        + "'"
+                        + ")) ORDER BY schemaTableName",
                 1,
                 null,
                 null);
@@ -206,9 +210,11 @@ public class OracleCatalog extends AbstractJdbcCatalog {
     public boolean tableExists(ObjectPath tablePath) throws CatalogException {
         return !extractColumnValuesBySQL(
                         defaultUrl,
-                        "SELECT table_name FROM sys.all_tables where OWNER = ? and table_name = ?",
+                        "SELECT table_name as tn FROM sys.all_tables where OWNER = ? and table_name = ? union SELECT view_name as tn FROM sys.all_views where OWNER = ? and view_name = ? ",
                         1,
                         null,
+                        tablePath.getDatabaseName(),
+                        tablePath.getObjectName(),
                         tablePath.getDatabaseName(),
                         tablePath.getObjectName())
                 .isEmpty();
