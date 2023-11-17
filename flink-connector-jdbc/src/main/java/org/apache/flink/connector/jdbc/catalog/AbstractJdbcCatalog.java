@@ -91,7 +91,7 @@ public abstract class AbstractJdbcCatalog extends AbstractCatalog {
     protected final String username;
     protected final String pwd;
     protected final String baseUrl;
-    protected final String defaultUrl;
+    protected String defaultUrl;
 
     public AbstractJdbcCatalog(
             ClassLoader userClassLoader,
@@ -114,6 +114,10 @@ public abstract class AbstractJdbcCatalog extends AbstractCatalog {
         this.pwd = pwd;
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
         this.defaultUrl = this.baseUrl + defaultDatabase;
+    }
+
+    protected void setDefaultUrl(String defaultUrl) {
+        this.defaultUrl = defaultUrl;
     }
 
     @Override

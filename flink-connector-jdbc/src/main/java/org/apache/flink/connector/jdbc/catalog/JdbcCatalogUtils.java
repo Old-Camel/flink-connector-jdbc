@@ -26,6 +26,8 @@ import org.apache.flink.connector.jdbc.databases.oracle.catalog.OracleCatalog;
 import org.apache.flink.connector.jdbc.databases.oracle.dialect.OracleDialect;
 import org.apache.flink.connector.jdbc.databases.postgres.catalog.PostgresCatalog;
 import org.apache.flink.connector.jdbc.databases.postgres.dialect.PostgresDialect;
+import org.apache.flink.connector.jdbc.databases.sqlserver.catalog.SqlServerCatalog;
+import org.apache.flink.connector.jdbc.databases.sqlserver.dialect.SqlServerDialect;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialect;
 import org.apache.flink.connector.jdbc.dialect.JdbcDialectLoader;
 
@@ -64,6 +66,9 @@ public class JdbcCatalogUtils {
                     userClassLoader, catalogName, defaultDatabase, username, pwd, baseUrl);
         } else if (dialect instanceof OracleDialect) {
             return new OracleCatalog(
+                    userClassLoader, catalogName, defaultDatabase, username, pwd, baseUrl);
+        } else if (dialect instanceof SqlServerDialect) {
+            return new SqlServerCatalog(
                     userClassLoader, catalogName, defaultDatabase, username, pwd, baseUrl);
         } else {
             throw new UnsupportedOperationException(
