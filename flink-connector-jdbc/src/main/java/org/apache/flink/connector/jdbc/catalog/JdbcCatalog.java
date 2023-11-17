@@ -79,6 +79,7 @@ public class JdbcCatalog extends AbstractJdbcCatalog {
         internal =
                 JdbcCatalogUtils.createCatalog(
                         userClassLoader, catalogName, defaultDatabase, username, pwd, baseUrl);
+        super.setDefaultUrl(internal.defaultUrl);
     }
 
     // ------ databases -----
