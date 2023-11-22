@@ -109,13 +109,35 @@ public class OracleCatalog extends AbstractJdbcCatalog {
 
     @Override
     public List<String> listDatabases() throws CatalogException {
-        return extractColumnValuesBySQL(
-                this.defaultUrl,
-                "select username from sys.all_users "
-                        + "where ORACLE_MAINTAINED ='N' "
-                        + " order by username",
-                1,
-                dbName -> !builtinDatabases.contains(dbName));
+        boolean flag = false;
+        try (Connection conn = DriverManager.getConnection(defaultUrl, username, pwd)) {
+            String statement = "SELECT * FROM sys.all_users";
+            PreparedStatement ps = conn.prepareStatement(statement);
+            ResultSetMetaData resultSetMetaData = ps.getMetaData();
+            for (int i = 1; i <= resultSetMetaData.getColumnCount(); i++) {
+                String name = resultSetMetaData.getColumnName(i).toUpperCase();
+                if ("ORACLE_MAINTAINED".equals(name)) {
+                    flag = true;
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        if (flag) {
+            return extractColumnValuesBySQL(
+                    this.defaultUrl,
+                    "select username from sys.all_users "
+                            + "where ORACLE_MAINTAINED ='N' "
+                            + " order by username",
+                    1,
+                    dbName -> !builtinDatabases.contains(dbName));
+        } else {
+            return extractColumnValuesBySQL(
+                    this.defaultUrl,
+                    "select username from sys.all_users " + " order by username",
+                    1,
+                    dbName -> !builtinDatabases.contains(dbName));
+        }
     }
 
     @Override
