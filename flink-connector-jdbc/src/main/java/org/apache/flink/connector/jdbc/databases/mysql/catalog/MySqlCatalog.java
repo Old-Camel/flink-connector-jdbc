@@ -68,7 +68,7 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
             String pwd,
             String baseUrl) {
         super(userClassLoader, catalogName, defaultDatabase, username, pwd, baseUrl);
-
+        this.defaultUrl += "?serverTimezone=Asia/Shanghai";
         String driverVersion =
                 Preconditions.checkNotNull(getDriverVersion(), "Driver version must not be null.");
         String databaseVersion =
