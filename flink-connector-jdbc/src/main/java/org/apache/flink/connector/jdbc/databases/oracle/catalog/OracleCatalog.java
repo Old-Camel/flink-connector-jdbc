@@ -194,7 +194,7 @@ public class OracleCatalog extends AbstractJdbcCatalog {
                             this.getDefaultDatabase(),
                             getSchemaName(tablePath),
                             getTableName(tablePath));
-            String statement = String.format("SELECT * FROM %s ", getSchemaTableName(tablePath));
+            String statement = String.format("SELECT * FROM %s ", tablePath.getFullName());
             PreparedStatement ps = conn.prepareStatement(statement);
             ResultSetMetaData resultSetMetaData = ps.getMetaData();
 
