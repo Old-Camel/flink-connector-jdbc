@@ -37,6 +37,8 @@ public class SqlServerTypeMapper implements JdbcDialectTypeMapper {
             case Types.NVARCHAR:
             case Types.STRUCT:
             case Types.CLOB:
+            case Types.LONGVARCHAR:
+            case Types.LONGNVARCHAR:
                 return DataTypes.STRING();
             case Types.BLOB:
                 return DataTypes.BYTES();
