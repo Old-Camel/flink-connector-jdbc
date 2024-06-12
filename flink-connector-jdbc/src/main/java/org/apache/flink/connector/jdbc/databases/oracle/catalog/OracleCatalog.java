@@ -275,7 +275,7 @@ public class OracleCatalog extends AbstractJdbcCatalog {
 
     @Override
     protected String getTableName(ObjectPath tablePath) {
-        return tablePath.getObjectName();
+        return tablePath.getFullName();
     }
 
     @Override
@@ -285,7 +285,7 @@ public class OracleCatalog extends AbstractJdbcCatalog {
 
     @Override
     protected String getSchemaTableName(ObjectPath tablePath) {
-        return tablePath.getObjectName();
+        return tablePath.getFullName();
     }
 
     protected DataType fromJDBCType(ObjectPath tablePath, ResultSetMetaData metadata, int colIndex)
