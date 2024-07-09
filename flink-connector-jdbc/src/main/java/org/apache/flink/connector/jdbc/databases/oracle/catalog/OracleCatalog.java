@@ -275,7 +275,7 @@ public class OracleCatalog extends AbstractJdbcCatalog {
 
     @Override
     protected String getTableName(ObjectPath tablePath) {
-        return tablePath.getFullName();
+        return tablePath.getObjectName();
     }
 
     @Override
