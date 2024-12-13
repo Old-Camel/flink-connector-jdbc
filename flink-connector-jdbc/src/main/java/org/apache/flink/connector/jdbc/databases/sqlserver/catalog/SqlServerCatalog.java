@@ -89,10 +89,15 @@ public class SqlServerCatalog extends AbstractJdbcCatalog {
     }
 
     public String getJdbcUrl() {
+        String defaultSslConfig = ";encrypt=false;trustServerCertificate=false";
+        String sslConfig = System.getenv("MSSQL_CONFIG");
+        if (StringUtils.isBlank(sslConfig)) {
+            sslConfig = defaultSslConfig;
+        }
         return StringUtils.substringBeforeLast(this.baseUrl, "/")
                 + ";DatabaseName="
                 + dbname
-                + ";trustServerCertificate=true";
+                + sslConfig;
     }
 
     @Override
