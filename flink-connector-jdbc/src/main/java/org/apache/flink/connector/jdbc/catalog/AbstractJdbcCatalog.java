@@ -120,6 +120,14 @@ public abstract class AbstractJdbcCatalog extends AbstractCatalog {
         this.defaultUrl = defaultUrl;
     }
 
+    /**
+     * Returns the JDBC URL used to connect to the given database. Subclasses may override this to
+     * append driver specific connection parameters; the default keeps the historical behaviour.
+     */
+    protected String getConnectionUrl(String databaseName) {
+        return baseUrl + databaseName;
+    }
+
     @Override
     public void open() throws CatalogException {
         // load the Driver use userClassLoader explicitly, see FLINK-15635 for more detail
@@ -250,7 +258,7 @@ public abstract class AbstractJdbcCatalog extends AbstractCatalog {
         }
 
         String databaseName = tablePath.getDatabaseName();
-        String dbUrl = baseUrl + databaseName;
+        String dbUrl = getConnectionUrl(databaseName);
 
         try (Connection conn = DriverManager.getConnection(dbUrl, username, pwd)) {
             DatabaseMetaData metaData = conn.getMetaData();
