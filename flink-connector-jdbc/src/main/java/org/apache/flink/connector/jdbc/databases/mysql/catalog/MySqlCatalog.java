@@ -60,6 +60,17 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                 }
             };
 
+    /**
+     * Appended to every JDBC URL of this catalog. A fixed offset is used on purpose: a fixed offset
+     * has no DST gap, so values such as 02:30 on a spring-forward day can still be converted. The
+     * "+" has to be percent-encoded, otherwise the driver decodes it into a space.
+     */
+    private static final String CONNECTION_PARAMS = "connectionTimeZone=GMT%2B08:00";
+
+    private static String withConnectionParams(String url) {
+        return url + (url.contains("?") ? "&" : "?") + CONNECTION_PARAMS;
+    }
+
     public MySqlCatalog(
             ClassLoader userClassLoader,
             String catalogName,
@@ -68,7 +79,7 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
             String pwd,
             String baseUrl) {
         super(userClassLoader, catalogName, defaultDatabase, username, pwd, baseUrl);
-        this.defaultUrl += "?serverTimezone=Asia/Shanghai";
+        this.defaultUrl = withConnectionParams(this.defaultUrl);
         String driverVersion =
                 Preconditions.checkNotNull(getDriverVersion(), "Driver version must not be null.");
         String databaseVersion =
@@ -76,6 +87,11 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
                         getDatabaseVersion(), "Database version must not be null.");
         LOG.info("Driver version: {}, database version: {}", driverVersion, databaseVersion);
         this.dialectTypeMapper = new MySqlTypeMapper(databaseVersion, driverVersion);
+    }
+
+    @Override
+    protected String getConnectionUrl(String databaseName) {
+        return withConnectionParams(super.getConnectionUrl(databaseName));
     }
 
     @Override
@@ -99,7 +115,7 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
         }
 
         return extractColumnValuesBySQL(
-                baseUrl + databaseName,
+                withConnectionParams(baseUrl + databaseName),
                 "SELECT TABLE_NAME FROM information_schema.`TABLES` WHERE TABLE_SCHEMA = ?",
                 1,
                 null,
@@ -109,7 +125,7 @@ public class MySqlCatalog extends AbstractJdbcCatalog {
     @Override
     public boolean tableExists(ObjectPath tablePath) throws CatalogException {
         return !extractColumnValuesBySQL(
-                        baseUrl,
+                        withConnectionParams(baseUrl),
                         "SELECT TABLE_NAME FROM information_schema.`TABLES` "
                                 + "WHERE TABLE_SCHEMA=? and TABLE_NAME=?",
                         1,
